@@ -188,6 +188,61 @@
       "item": [
         {
           "name": "CreateBooking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 1. Data Extraction\r",
+                  "const scenarioName = pm.iterationData.get(\"scenario\");\r",
+                  "const isSuccess = pm.iterationData.get(\"is_success\") === true || pm.iterationData.get(\"is_success\") === \"true\";\r",
+                  "const expectedStatus = parseInt(pm.iterationData.get(\"expected_status\"), 10);\r",
+                  "\r",
+                  "// 2. Initial Assertion\r",
+                  "pm.test(`[${scenarioName}] Status code should be ${expectedStatus}`, function () {\r",
+                  "    pm.response.to.have.status(expectedStatus);\r",
+                  "});\r",
+                  "\r",
+                  "// 3. Guard Clause: Abort if it is an expected negative scenario\r",
+                  "if (!isSuccess) {\r",
+                  "    console.warn(`[${scenarioName}] Negative test completed. Skipping response validation.`);\r",
+                  "    return;\r",
+                  "}\r",
+                  "\r",
+                  "// 4. Parse Response\r",
+                  "const responseJson = pm.response.json();\r",
+                  "\r",
+                  "// 5. Dynamic Branching Assertions: Verify and save Booking ID\r",
+                  "pm.test(`[${scenarioName}] Booking ID is generated`, function () {\r",
+                  "    pm.expect(responseJson.bookingid).to.not.be.undefined;\r",
+                  "    pm.expect(responseJson.bookingid).to.be.a(\"number\");\r",
+                  "});\r",
+                  "\r",
+                  "// 6. Full Object Validation: Construct the expected object representing the desired backend state\r",
+                  "const expectedBooking = {\r",
+                  "    firstname: pm.iterationData.get(\"firstname\"),\r",
+                  "    lastname: pm.iterationData.get(\"lastname\"),\r",
+                  "    totalprice: parseInt(pm.iterationData.get(\"totalprice\"), 10),\r",
+                  "    // Handle CSV string to boolean conversion\r",
+                  "    depositpaid: pm.iterationData.get(\"depositpaid\") === \"true\" || pm.iterationData.get(\"depositpaid\") === true,\r",
+                  "    bookingdates: {\r",
+                  "        checkin: pm.iterationData.get(\"checkin\"),\r",
+                  "        checkout: pm.iterationData.get(\"checkout\")\r",
+                  "    },\r",
+                  "    additionalneeds: pm.iterationData.get(\"additionalneeds\")\r",
+                  "};\r",
+                  "\r",
+                  "// Validate the entire response object against the constructed expected object\r",
+                  "pm.test(`[${scenarioName}] Booking data perfectly matches input (Deep Equality)`, function () {\r",
+                  "    pm.expect(responseJson.booking).to.eql(expectedBooking);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -204,7 +259,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"firstname\" : \"Jim\",\r\n    \"lastname\" : \"Brown\",\r\n    \"totalprice\" : 111,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"2018-01-01\",\r\n        \"checkout\" : \"2019-01-01\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "raw": "{\r\n    \"firstname\" : \"{{firstname}}\",\r\n    \"lastname\" : \"{{lastname}}\",\r\n    \"totalprice\" : {{totalprice}},\r\n    \"depositpaid\" : {{depositpaid}},\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin}}\",\r\n        \"checkout\" : \"{{checkout}}\"\r\n    },\r\n    \"additionalneeds\" : \"{{additionalneeds}}\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
