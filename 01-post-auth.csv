@@ -2,4 +2,5 @@ scenario,username,password,is_success,expected_error_msg
 Happy Path - Valid Login,admin,password123,true,
 Negative - Wrong Username,wrongadmin,password123,false,Bad credentials
 Negative - Wrong Password,admin,wrongpassword,false,Bad credentials
-Negative - Empty Data,,,false,Bad credentials
+Negative - Missing Username,OMIT,password123,false,Bad credentials
+Negative - Empty Username,,password123,false,Bad credentials
