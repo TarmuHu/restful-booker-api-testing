@@ -1,3 +1,4 @@
 scenario,firstname,lastname,totalprice,depositpaid,checkin,checkout,additionalneeds,is_success,expected_status
 Happy Path - Valid Booking,Tony,Stark,899,true,2026-08-01,2026-08-10,Iron Suit Storage,true,200
-Negative - Missing Firstname,,Stark,899,true,2026-08-01,2026-08-10,Iron Suit Storage,false,500
+Negative - Missing Firstname,OMIT,Stark,899,true,2026-08-01,2026-08-10,Iron Suit Storage,false,500
+Negative - Empty Firstname,,Stark,899,true,2026-08-01,2026-08-10,Iron Suit Storage,true,200

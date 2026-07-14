@@ -1,0 +1,5 @@
+scenario,filter_firstname,filter_lastname,filter_checkin,filter_checkout,should_find_match
+Happy Path - Filter by Name,DynamicFirst,DynamicLast,OMIT,OMIT,true
+Happy Path - Filter by Date,OMIT,OMIT,2030-01-01,2030-12-31,true
+Happy Path - Filter by Name and Date,DynamicFirst,DynamicLast,2030-01-01,2030-12-31,true
+Negative - No Matches,NonExistentFirst,NonExistentLast,OMIT,OMIT,false

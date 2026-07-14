@@ -25,7 +25,23 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(`Status code is 200`, function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(`Has Allow header`, function () {",
+                  "    pm.response.to.have.header('Allow');",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "booking",
@@ -42,7 +58,23 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(`Status code is 200`, function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(`Has Allow header`, function () {",
+                  "    pm.response.to.have.header('Allow');",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "booking/:id",
@@ -50,12 +82,15 @@
             {
               "listen": "test",
               "script": {
-                "exec": [
-                  ""
-                ],
                 "type": "text/javascript",
-                "packages": {},
-                "requests": {}
+                "exec": [
+                  "pm.test(`Status code is 200`, function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(`Has Allow header`, function () {",
+                  "    pm.response.to.have.header('Allow');",
+                  "});"
+                ]
               }
             }
           ],
@@ -97,7 +132,23 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(`Status code is 200`, function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(`Has Allow header`, function () {",
+                  "    pm.response.to.have.header('Allow');",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -146,6 +197,24 @@
                 "packages": {},
                 "requests": {}
               }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "let body = {};",
+                  "const username = pm.iterationData.get(\"username\");",
+                  "const password = pm.iterationData.get(\"password\");",
+                  "",
+                  "if (username !== \"OMIT\" && username !== undefined) body.username = username;",
+                  "if (password !== \"OMIT\" && password !== undefined) body.password = password;",
+                  "",
+                  "pm.variables.set(\"authDynamicBody\", JSON.stringify(body));",
+                  ""
+                ]
+              }
             }
           ],
           "protocolProfileBehavior": {
@@ -162,7 +231,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\" : \"{{username}}\",\r\n    \"password\" : \"{{password}}\"\r\n}",
+              "raw": "{{authDynamicBody}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -241,6 +310,42 @@
                 "packages": {},
                 "requests": {}
               }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "let body = {};",
+                  "const fields = [\"firstname\", \"lastname\", \"totalprice\", \"depositpaid\", \"additionalneeds\"];",
+                  "",
+                  "fields.forEach(field => {",
+                  "    const val = pm.iterationData.get(field);",
+                  "    if (val !== \"OMIT\" && val !== undefined) {",
+                  "        if (field === \"totalprice\") {",
+                  "            body[field] = parseInt(val, 10);",
+                  "        } else if (field === \"depositpaid\") {",
+                  "            body[field] = val === \"true\" || val === true;",
+                  "        } else {",
+                  "            body[field] = val;",
+                  "        }",
+                  "    }",
+                  "});",
+                  "",
+                  "const checkin = pm.iterationData.get(\"checkin\");",
+                  "const checkout = pm.iterationData.get(\"checkout\");",
+                  "",
+                  "if ((checkin !== \"OMIT\" && checkin !== undefined) || (checkout !== \"OMIT\" && checkout !== undefined)) {",
+                  "    body.bookingdates = {};",
+                  "    if (checkin !== \"OMIT\" && checkin !== undefined) body.bookingdates.checkin = checkin;",
+                  "    if (checkout !== \"OMIT\" && checkout !== undefined) body.bookingdates.checkout = checkout;",
+                  "}",
+                  "",
+                  "pm.variables.set(\"dynamicBody\", JSON.stringify(body));",
+                  ""
+                ]
+              }
             }
           ],
           "request": {
@@ -259,7 +364,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"firstname\" : \"{{firstname}}\",\r\n    \"lastname\" : \"{{lastname}}\",\r\n    \"totalprice\" : {{totalprice}},\r\n    \"depositpaid\" : {{depositpaid}},\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin}}\",\r\n        \"checkout\" : \"{{checkout}}\"\r\n    },\r\n    \"additionalneeds\" : \"{{additionalneeds}}\"\r\n}",
+              "raw": "{{dynamicBody}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -289,36 +394,104 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/booking?firstname=Jim&lastname=Brown&checkin=2017-12-31&checkout=2019-01-01",
+              "raw": "{{baseUrl}}/booking",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "booking"
               ],
-              "query": [
-                {
-                  "key": "firstname",
-                  "value": "Jim"
-                },
-                {
-                  "key": "lastname",
-                  "value": "Brown"
-                },
-                {
-                  "key": "checkin",
-                  "value": "2017-12-31",
-                  "description": "< checkin"
-                },
-                {
-                  "key": "checkout",
-                  "value": "2019-01-01",
-                  "description": ">= checkout"
-                }
-              ]
+              "query": []
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "const scenario = pm.iterationData.get(\"scenario\");",
+                  "const shouldFindMatch = pm.iterationData.get(\"should_find_match\");",
+                  "",
+                  "// Prepare dynamic booking data",
+                  "const dynamicFirstname = pm.iterationData.get(\"filter_firstname\") === \"DynamicFirst\" ? \"DynamicFirst\" : \"OtherFirst\";",
+                  "const dynamicLastname = pm.iterationData.get(\"filter_lastname\") === \"DynamicLast\" ? \"DynamicLast\" : \"OtherLast\";",
+                  "const dynamicCheckin = pm.iterationData.get(\"filter_checkin\") !== \"OMIT\" ? \"2030-06-01\" : \"2018-01-01\";",
+                  "const dynamicCheckout = pm.iterationData.get(\"filter_checkout\") !== \"OMIT\" ? \"2030-07-01\" : \"2019-01-01\";",
+                  "",
+                  "const createBookingReq = {",
+                  "    url: pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\" + \"/booking\",",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({",
+                  "            firstname: dynamicFirstname,",
+                  "            lastname: dynamicLastname,",
+                  "            totalprice: 111,",
+                  "            depositpaid: true,",
+                  "            bookingdates: {",
+                  "                checkin: dynamicCheckin,",
+                  "                checkout: dynamicCheckout",
+                  "            },",
+                  "            additionalneeds: \"Breakfast\"",
+                  "        })",
+                  "    }",
+                  "};",
+                  "",
+                  "pm.sendRequest(createBookingReq, (err, res) => {",
+                  "    if (err) { console.error(err); return; }",
+                  "    const responseJson = res.json();",
+                  "    pm.variables.set(\"dynamic_created_id\", responseJson.bookingid);",
+                  "});",
+                  "",
+                  "// Use query params logic using pm.request.url.query API",
+                  "if (pm.iterationData.get(\"filter_firstname\") !== \"OMIT\") pm.request.url.query.add({ key: \"firstname\", value: pm.iterationData.get(\"filter_firstname\") });",
+                  "if (pm.iterationData.get(\"filter_lastname\") !== \"OMIT\") pm.request.url.query.add({ key: \"lastname\", value: pm.iterationData.get(\"filter_lastname\") });",
+                  "if (pm.iterationData.get(\"filter_checkin\") !== \"OMIT\") pm.request.url.query.add({ key: \"checkin\", value: pm.iterationData.get(\"filter_checkin\") });",
+                  "if (pm.iterationData.get(\"filter_checkout\") !== \"OMIT\") pm.request.url.query.add({ key: \"checkout\", value: pm.iterationData.get(\"filter_checkout\") });",
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "const scenario = pm.iterationData.get(\"scenario\");",
+                  "const shouldFindMatch = pm.iterationData.get(\"should_find_match\") === true || pm.iterationData.get(\"should_find_match\") === \"true\";",
+                  "const createdId = pm.variables.get(\"dynamic_created_id\");",
+                  "",
+                  "pm.test(`[${scenario}] Status code is 200`, function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const responseJson = pm.response.json();",
+                  "",
+                  "pm.test(`[${scenario}] Response is an array`, function () {",
+                  "    pm.expect(responseJson).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "if (shouldFindMatch) {",
+                  "    pm.test(`[${scenario}] Match found in results (contains created ID: ${createdId})`, function () {",
+                  "        const found = responseJson.find(b => b.bookingid === createdId);",
+                  "        pm.expect(found).to.not.be.undefined;",
+                  "    });",
+                  "} else {",
+                  "    pm.test(`[${scenario}] No matches found for invalid filters`, function () {",
+                  "        const found = responseJson.find(b => b.bookingid === createdId);",
+                  "        pm.expect(found).to.be.undefined;",
+                  "    });",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -347,7 +520,81 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "const scenario = pm.iterationData.get(\"scenario\");",
+                  "const isValidId = pm.iterationData.get(\"is_valid_id\") === true || pm.iterationData.get(\"is_valid_id\") === \"true\";",
+                  "",
+                  "if (isValidId) {",
+                  "    const createBookingReq = {",
+                  "        url: pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\" + \"/booking\",",
+                  "        method: 'POST',",
+                  "        header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
+                  "        body: {",
+                  "            mode: 'raw',",
+                  "            raw: JSON.stringify({",
+                  "                firstname: \"Fetch\",",
+                  "                lastname: \"Me\",",
+                  "                totalprice: 250,",
+                  "                depositpaid: true,",
+                  "                bookingdates: {",
+                  "                    checkin: \"2030-01-01\",",
+                  "                    checkout: \"2030-01-10\"",
+                  "                },",
+                  "                additionalneeds: \"Extra Pillows\"",
+                  "            })",
+                  "        }",
+                  "    };",
+                  "",
+                  "    pm.sendRequest(createBookingReq, (err, res) => {",
+                  "        if (err) { console.error(err); return; }",
+                  "        const responseJson = res.json();",
+                  "        pm.variables.set(\"id\", responseJson.bookingid);",
+                  "    });",
+                  "} else {",
+                  "    // Generate a very high number ID that likely doesn't exist",
+                  "    pm.variables.set(\"id\", 99999999);",
+                  "}",
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "const scenario = pm.iterationData.get(\"scenario\");",
+                  "const expectedStatus = parseInt(pm.iterationData.get(\"expected_status\"), 10);",
+                  "",
+                  "pm.test(`[${scenario}] Status code is ${expectedStatus}`, function () {",
+                  "    pm.response.to.have.status(expectedStatus);",
+                  "});",
+                  "",
+                  "if (expectedStatus === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.test(`[${scenario}] Response contains expected booking details`, function () {",
+                  "        pm.expect(responseJson.firstname).to.eql(\"Fetch\");",
+                  "        pm.expect(responseJson.lastname).to.eql(\"Me\");",
+                  "        pm.expect(responseJson.totalprice).to.eql(250);",
+                  "        pm.expect(responseJson.depositpaid).to.be.true;",
+                  "        pm.expect(responseJson.bookingdates.checkin).to.eql(\"2030-01-01\");",
+                  "        pm.expect(responseJson.bookingdates.checkout).to.eql(\"2030-01-10\");",
+                  "        pm.expect(responseJson.additionalneeds).to.eql(\"Extra Pillows\");",
+                  "    });",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -383,7 +630,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"firstname\" : \"James\",\r\n    \"lastname\" : \"Brown\",\r\n    \"totalprice\" : 111,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"2018-01-01\",\r\n        \"checkout\" : \"2019-01-01\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "raw": "{{putDynamicBody}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -401,7 +648,120 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "const isValidId = pm.iterationData.get(\"is_valid_id\") === true || pm.iterationData.get(\"is_valid_id\") === \"true\";",
+                  "const isValidToken = pm.iterationData.get(\"is_valid_token\") === true || pm.iterationData.get(\"is_valid_token\") === \"true\";",
+                  "const baseUrl = pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\";",
+                  "",
+                  "// 1. Generate Auth Token",
+                  "if (isValidToken) {",
+                  "    const authReq = {",
+                  "        url: baseUrl + \"/auth\",",
+                  "        method: 'POST',",
+                  "        header: { 'Content-Type': 'application/json' },",
+                  "        body: { mode: 'raw', raw: JSON.stringify({ username: \"admin\", password: \"password123\" }) }",
+                  "    };",
+                  "    pm.sendRequest(authReq, (err, res) => {",
+                  "        if (!err && res.code === 200) {",
+                  "            pm.variables.set(\"token\", res.json().token);",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.variables.set(\"token\", \"invalid_token_123\");",
+                  "}",
+                  "",
+                  "// 2. Generate Booking ID",
+                  "if (isValidId) {",
+                  "    const bookingReq = {",
+                  "        url: baseUrl + \"/booking\",",
+                  "        method: 'POST',",
+                  "        header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
+                  "        body: {",
+                  "            mode: 'raw',",
+                  "            raw: JSON.stringify({",
+                  "                firstname: \"Old\", lastname: \"Name\", totalprice: 100, depositpaid: true,",
+                  "                bookingdates: { checkin: \"2018-01-01\", checkout: \"2019-01-01\" },",
+                  "                additionalneeds: \"None\"",
+                  "            })",
+                  "        }",
+                  "    };",
+                  "    pm.sendRequest(bookingReq, (err, res) => {",
+                  "        if (!err && res.code === 200) {",
+                  "            pm.variables.set(\"id\", res.json().bookingid);",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.variables.set(\"id\", 99999999);",
+                  "}",
+                  "",
+                  "// 3. Prepare Dynamic Body for PUT",
+                  "let body = {};",
+                  "const fields = [\"firstname\", \"lastname\", \"totalprice\", \"depositpaid\", \"additionalneeds\"];",
+                  "",
+                  "fields.forEach(field => {",
+                  "    const val = pm.iterationData.get(field);",
+                  "    if (val !== \"OMIT\" && val !== undefined) {",
+                  "        if (field === \"totalprice\") {",
+                  "            body[field] = parseInt(val, 10);",
+                  "        } else if (field === \"depositpaid\") {",
+                  "            body[field] = val === \"true\" || val === true;",
+                  "        } else {",
+                  "            body[field] = val;",
+                  "        }",
+                  "    }",
+                  "});",
+                  "",
+                  "const checkin = pm.iterationData.get(\"checkin\");",
+                  "const checkout = pm.iterationData.get(\"checkout\");",
+                  "",
+                  "if ((checkin !== \"OMIT\" && checkin !== undefined) || (checkout !== \"OMIT\" && checkout !== undefined)) {",
+                  "    body.bookingdates = {};",
+                  "    if (checkin !== \"OMIT\" && checkin !== undefined) body.bookingdates.checkin = checkin;",
+                  "    if (checkout !== \"OMIT\" && checkout !== undefined) body.bookingdates.checkout = checkout;",
+                  "}",
+                  "",
+                  "pm.variables.set(\"putDynamicBody\", JSON.stringify(body));",
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "const scenario = pm.iterationData.get(\"scenario\");",
+                  "const expectedStatus = parseInt(pm.iterationData.get(\"expected_status\"), 10);",
+                  "",
+                  "pm.test(`[${scenario}] Status code is ${expectedStatus}`, function () {",
+                  "    pm.response.to.have.status(expectedStatus);",
+                  "});",
+                  "",
+                  "if (expectedStatus === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.test(`[${scenario}] Booking successfully fully updated`, function () {",
+                  "        pm.expect(responseJson.firstname).to.eql(pm.iterationData.get(\"firstname\"));",
+                  "        pm.expect(responseJson.lastname).to.eql(pm.iterationData.get(\"lastname\"));",
+                  "        pm.expect(responseJson.totalprice).to.eql(parseInt(pm.iterationData.get(\"totalprice\"), 10));",
+                  "        pm.expect(responseJson.depositpaid).to.eql(pm.iterationData.get(\"depositpaid\") === \"true\" || pm.iterationData.get(\"depositpaid\") === true);",
+                  "        pm.expect(responseJson.bookingdates.checkin).to.eql(pm.iterationData.get(\"checkin\"));",
+                  "        pm.expect(responseJson.bookingdates.checkout).to.eql(pm.iterationData.get(\"checkout\"));",
+                  "        pm.expect(responseJson.additionalneeds).to.eql(pm.iterationData.get(\"additionalneeds\"));",
+                  "    });",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -437,7 +797,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"additionalneeds\" : \"big mac\"\r\n}",
+              "raw": "{{patchDynamicBody}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -455,7 +815,97 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "const isValidId = pm.iterationData.get(\"is_valid_id\") === true || pm.iterationData.get(\"is_valid_id\") === \"true\";",
+                  "const isValidToken = pm.iterationData.get(\"is_valid_token\") === true || pm.iterationData.get(\"is_valid_token\") === \"true\";",
+                  "const baseUrl = pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\";",
+                  "",
+                  "// 1. Generate Auth Token",
+                  "if (isValidToken) {",
+                  "    const authReq = {",
+                  "        url: baseUrl + \"/auth\",",
+                  "        method: 'POST',",
+                  "        header: { 'Content-Type': 'application/json' },",
+                  "        body: { mode: 'raw', raw: JSON.stringify({ username: \"admin\", password: \"password123\" }) }",
+                  "    };",
+                  "    pm.sendRequest(authReq, (err, res) => {",
+                  "        if (!err && res.code === 200) {",
+                  "            pm.variables.set(\"token\", res.json().token);",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.variables.set(\"token\", \"invalid_token_123\");",
+                  "}",
+                  "",
+                  "// 2. Generate Booking ID",
+                  "if (isValidId) {",
+                  "    const bookingReq = {",
+                  "        url: baseUrl + \"/booking\",",
+                  "        method: 'POST',",
+                  "        header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
+                  "        body: {",
+                  "            mode: 'raw',",
+                  "            raw: JSON.stringify({",
+                  "                firstname: \"Original\", lastname: \"Name\", totalprice: 150, depositpaid: false,",
+                  "                bookingdates: { checkin: \"2018-01-01\", checkout: \"2019-01-01\" },",
+                  "                additionalneeds: \"None\"",
+                  "            })",
+                  "        }",
+                  "    };",
+                  "    pm.sendRequest(bookingReq, (err, res) => {",
+                  "        if (!err && res.code === 200) {",
+                  "            pm.variables.set(\"id\", res.json().bookingid);",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.variables.set(\"id\", 99999999);",
+                  "}",
+                  "",
+                  "// 3. Prepare Dynamic Body for PATCH",
+                  "let body = {};",
+                  "if (pm.iterationData.get(\"additionalneeds\") !== \"OMIT\") {",
+                  "    body.additionalneeds = pm.iterationData.get(\"additionalneeds\");",
+                  "}",
+                  "",
+                  "pm.variables.set(\"patchDynamicBody\", JSON.stringify(body));",
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "const scenario = pm.iterationData.get(\"scenario\");",
+                  "const expectedStatus = parseInt(pm.iterationData.get(\"expected_status\"), 10);",
+                  "",
+                  "pm.test(`[${scenario}] Status code is ${expectedStatus}`, function () {",
+                  "    pm.response.to.have.status(expectedStatus);",
+                  "});",
+                  "",
+                  "if (expectedStatus === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.test(`[${scenario}] Booking successfully partially updated`, function () {",
+                  "        pm.expect(responseJson.additionalneeds).to.eql(pm.iterationData.get(\"additionalneeds\"));",
+                  "        // Check that original fields are preserved",
+                  "        pm.expect(responseJson.firstname).to.eql(\"Original\");",
+                  "        pm.expect(responseJson.lastname).to.eql(\"Name\");",
+                  "    });",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -490,7 +940,94 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "const isValidId = pm.iterationData.get(\"is_valid_id\") === true || pm.iterationData.get(\"is_valid_id\") === \"true\";",
+                  "const isValidToken = pm.iterationData.get(\"is_valid_token\") === true || pm.iterationData.get(\"is_valid_token\") === \"true\";",
+                  "const baseUrl = pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\";",
+                  "",
+                  "// 1. Generate Auth Token",
+                  "if (isValidToken) {",
+                  "    const authReq = {",
+                  "        url: baseUrl + \"/auth\",",
+                  "        method: 'POST',",
+                  "        header: { 'Content-Type': 'application/json' },",
+                  "        body: { mode: 'raw', raw: JSON.stringify({ username: \"admin\", password: \"password123\" }) }",
+                  "    };",
+                  "    pm.sendRequest(authReq, (err, res) => {",
+                  "        if (!err && res.code === 200) {",
+                  "            pm.variables.set(\"token\", res.json().token);",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.variables.set(\"token\", \"invalid_token_123\");",
+                  "}",
+                  "",
+                  "// 2. Generate Booking ID",
+                  "if (isValidId) {",
+                  "    const bookingReq = {",
+                  "        url: baseUrl + \"/booking\",",
+                  "        method: 'POST',",
+                  "        header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
+                  "        body: {",
+                  "            mode: 'raw',",
+                  "            raw: JSON.stringify({",
+                  "                firstname: \"ToDelete\", lastname: \"Soon\", totalprice: 150, depositpaid: false,",
+                  "                bookingdates: { checkin: \"2018-01-01\", checkout: \"2019-01-01\" },",
+                  "                additionalneeds: \"None\"",
+                  "            })",
+                  "        }",
+                  "    };",
+                  "    pm.sendRequest(bookingReq, (err, res) => {",
+                  "        if (!err && res.code === 200) {",
+                  "            pm.variables.set(\"id\", res.json().bookingid);",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.variables.set(\"id\", 99999999);",
+                  "}",
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "const scenario = pm.iterationData.get(\"scenario\");",
+                  "const expectedStatus = parseInt(pm.iterationData.get(\"expected_status\"), 10);",
+                  "",
+                  "pm.test(`[${scenario}] Status code is ${expectedStatus}`, function () {",
+                  "    pm.response.to.have.status(expectedStatus);",
+                  "});",
+                  "",
+                  "// For delete, if successful, we can optionally check if the booking is really gone",
+                  "if (expectedStatus === 201) {",
+                  "    const id = pm.variables.get(\"id\");",
+                  "    const getReq = {",
+                  "        url: (pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\") + \"/booking/\" + id,",
+                  "        method: 'GET',",
+                  "        header: { 'Accept': 'application/json' }",
+                  "    };",
+                  "    pm.sendRequest(getReq, (err, res) => {",
+                  "        pm.test(`[${scenario}] Booking is effectively removed (returns 404)`, function () {",
+                  "            pm.expect(res.code).to.eql(404);",
+                  "        });",
+                  "    });",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -512,7 +1049,22 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
         }
       ]
     }

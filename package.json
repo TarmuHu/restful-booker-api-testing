@@ -1,0 +1,12 @@
+{
+  "name": "restful-booker-tests",
+  "version": "1.0.0",
+  "description": "API tests for restful-booker",
+  "main": "index.js",
+  "scripts": {
+    "test": "bash run-tests.sh"
+  },
+  "dependencies": {
+    "newman": "^6.1.2"
+  }
+}

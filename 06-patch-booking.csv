@@ -1,0 +1,4 @@
+scenario,additionalneeds,is_valid_id,is_valid_token,expected_status
+Happy Path - Partial Update,Double Bed,true,true,200
+Negative - Invalid Token,Double Bed,true,false,403
+Negative - Invalid ID,Double Bed,false,true,405
