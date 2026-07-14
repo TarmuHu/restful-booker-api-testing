@@ -8,5 +8,9 @@
   },
   "dependencies": {
     "newman": "^6.1.2"
+  },
+  "devDependencies": {
+    "newman-reporter-htmlextra": "^1.23.1",
+    "newman-reporter-junitfull": "^1.1.1"
   }
 }

@@ -5,14 +5,22 @@ COLLECTION="restful-booker.postman_collection.json"
 
 FAILED=0
 
+# Create reports directory if it doesn't exist
+mkdir -p reports
+
 # Function to run newman for a specific folder and data file
 run_newman() {
     folder="$1"
     data_file="$2"
+    # Create a safe name for the report files by replacing spaces and slashes with dashes
+    safe_name=$(echo "$folder" | tr ' /:' '-')
     echo "=========================================================="
     echo "Running tests for: $folder"
     echo "=========================================================="
-    npx newman run "$COLLECTION" --folder "$folder" -d "$data_file" || FAILED=1
+    npx newman run "$COLLECTION" --folder "$folder" -d "$data_file" \
+        -r cli,htmlextra,junitfull \
+        --reporter-htmlextra-export "reports/${safe_name}-report.html" \
+        --reporter-junitfull-export "reports/${safe_name}-report.xml" || FAILED=1
     echo ""
 }
 
@@ -29,6 +37,8 @@ run_newman "08. GET /ping" "08-get-ping.csv"
 
 if [ $FAILED -ne 0 ]; then
     echo "Some tests failed!"
+    exit 1
 else
     echo "All tests passed successfully!"
+    exit 0
 fi
