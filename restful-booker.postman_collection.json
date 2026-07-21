@@ -191,7 +191,10 @@
                   "    pm.test(`[${scenarioName}] Error message matches expected value: ${expectedMsg}`, function () {\r",
                   "        pm.expect(responseJson.reason).to.eql(expectedMsg);\r",
                   "    });\r",
-                  "}"
+                  "}",
+                  "",
+                  "// Cleanup variables",
+                  "pm.variables.unset(\"dynamicBody\");"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -211,7 +214,7 @@
                   "if (username !== \"OMIT\" && username !== undefined) body.username = username;",
                   "if (password !== \"OMIT\" && password !== undefined) body.password = password;",
                   "",
-                  "pm.variables.set(\"authDynamicBody\", JSON.stringify(body));",
+                  "pm.variables.set(\"dynamicBody\", JSON.stringify(body));",
                   ""
                 ]
               }
@@ -231,7 +234,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{{authDynamicBody}}",
+              "raw": "{{dynamicBody}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -304,7 +307,10 @@
                   "// Validate the entire response object against the constructed expected object\r",
                   "pm.test(`[${scenarioName}] Booking data perfectly matches input (Deep Equality)`, function () {\r",
                   "    pm.expect(responseJson.booking).to.eql(expectedBooking);\r",
-                  "});"
+                  "});",
+                  "",
+                  "// Cleanup variables",
+                  "pm.variables.unset(\"dynamicBody\");"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -487,7 +493,10 @@
                   "        pm.expect(found).to.be.undefined;",
                   "    });",
                   "}",
-                  ""
+                  "",
+                  "",
+                  "// Cleanup variables",
+                  "pm.variables.unset(\"dynamic_created_id\");"
                 ]
               }
             }
@@ -531,36 +540,9 @@
                   "const scenario = pm.iterationData.get(\"scenario\");",
                   "const isValidId = pm.iterationData.get(\"is_valid_id\") === true || pm.iterationData.get(\"is_valid_id\") === \"true\";",
                   "",
-                  "if (isValidId) {",
-                  "    const createBookingReq = {",
-                  "        url: pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\" + \"/booking\",",
-                  "        method: 'POST',",
-                  "        header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
-                  "        body: {",
-                  "            mode: 'raw',",
-                  "            raw: JSON.stringify({",
-                  "                firstname: \"Fetch\",",
-                  "                lastname: \"Me\",",
-                  "                totalprice: 250,",
-                  "                depositpaid: true,",
-                  "                bookingdates: {",
-                  "                    checkin: \"2030-01-01\",",
-                  "                    checkout: \"2030-01-10\"",
-                  "                },",
-                  "                additionalneeds: \"Extra Pillows\"",
-                  "            })",
-                  "        }",
-                  "    };",
+                  "eval(pm.variables.get(\"sharedUtils\"));",
+                  "generateBookingId(isValidId, pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\", \"Fetch\", \"Me\", { totalprice: 250, depositpaid: true, bookingdates: { checkin: \"2030-01-01\", checkout: \"2030-01-10\" }, additionalneeds: \"Extra Pillows\" });",
                   "",
-                  "    pm.sendRequest(createBookingReq, (err, res) => {",
-                  "        if (err) { console.error(err); return; }",
-                  "        const responseJson = res.json();",
-                  "        pm.variables.set(\"id\", responseJson.bookingid);",
-                  "    });",
-                  "} else {",
-                  "    // Generate a very high number ID that likely doesn't exist",
-                  "    pm.variables.set(\"id\", 99999999);",
-                  "}",
                   ""
                 ]
               }
@@ -590,7 +572,10 @@
                   "        pm.expect(responseJson.additionalneeds).to.eql(\"Extra Pillows\");",
                   "    });",
                   "}",
-                  ""
+                  "",
+                  "",
+                  "// Cleanup variables",
+                  "pm.variables.unset(\"id\");"
                 ]
               }
             }
@@ -630,7 +615,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{{putDynamicBody}}",
+              "raw": "{{dynamicBody}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -660,46 +645,11 @@
                   "const isValidToken = pm.iterationData.get(\"is_valid_token\") === true || pm.iterationData.get(\"is_valid_token\") === \"true\";",
                   "const baseUrl = pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\";",
                   "",
-                  "// 1. Generate Auth Token",
-                  "if (isValidToken) {",
-                  "    const authReq = {",
-                  "        url: baseUrl + \"/auth\",",
-                  "        method: 'POST',",
-                  "        header: { 'Content-Type': 'application/json' },",
-                  "        body: { mode: 'raw', raw: JSON.stringify({ username: \"admin\", password: \"password123\" }) }",
-                  "    };",
-                  "    pm.sendRequest(authReq, (err, res) => {",
-                  "        if (!err && res.code === 200) {",
-                  "            pm.variables.set(\"token\", res.json().token);",
-                  "        }",
-                  "    });",
-                  "} else {",
-                  "    pm.variables.set(\"token\", \"invalid_token_123\");",
-                  "}",
+                  "eval(pm.variables.get(\"sharedUtils\"));",
+                  "generateAuthToken(isValidToken, baseUrl);",
+                  "generateBookingId(isValidId, baseUrl, \"Old\", \"Name\", { totalprice: 100, depositpaid: true });",
                   "",
-                  "// 2. Generate Booking ID",
-                  "if (isValidId) {",
-                  "    const bookingReq = {",
-                  "        url: baseUrl + \"/booking\",",
-                  "        method: 'POST',",
-                  "        header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
-                  "        body: {",
-                  "            mode: 'raw',",
-                  "            raw: JSON.stringify({",
-                  "                firstname: \"Old\", lastname: \"Name\", totalprice: 100, depositpaid: true,",
-                  "                bookingdates: { checkin: \"2018-01-01\", checkout: \"2019-01-01\" },",
-                  "                additionalneeds: \"None\"",
-                  "            })",
-                  "        }",
-                  "    };",
-                  "    pm.sendRequest(bookingReq, (err, res) => {",
-                  "        if (!err && res.code === 200) {",
-                  "            pm.variables.set(\"id\", res.json().bookingid);",
-                  "        }",
-                  "    });",
-                  "} else {",
-                  "    pm.variables.set(\"id\", 99999999);",
-                  "}",
+                  "",
                   "",
                   "// 3. Prepare Dynamic Body for PUT",
                   "let body = {};",
@@ -727,7 +677,7 @@
                   "    if (checkout !== \"OMIT\" && checkout !== undefined) body.bookingdates.checkout = checkout;",
                   "}",
                   "",
-                  "pm.variables.set(\"putDynamicBody\", JSON.stringify(body));",
+                  "pm.variables.set(\"dynamicBody\", JSON.stringify(body));",
                   ""
                 ]
               }
@@ -757,7 +707,12 @@
                   "        pm.expect(responseJson.additionalneeds).to.eql(pm.iterationData.get(\"additionalneeds\"));",
                   "    });",
                   "}",
-                  ""
+                  "",
+                  "",
+                  "// Cleanup variables",
+                  "pm.variables.unset(\"dynamicBody\");",
+                  "pm.variables.unset(\"token\");",
+                  "pm.variables.unset(\"id\");"
                 ]
               }
             }
@@ -797,7 +752,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{{patchDynamicBody}}",
+              "raw": "{{dynamicBody}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -827,46 +782,11 @@
                   "const isValidToken = pm.iterationData.get(\"is_valid_token\") === true || pm.iterationData.get(\"is_valid_token\") === \"true\";",
                   "const baseUrl = pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\";",
                   "",
-                  "// 1. Generate Auth Token",
-                  "if (isValidToken) {",
-                  "    const authReq = {",
-                  "        url: baseUrl + \"/auth\",",
-                  "        method: 'POST',",
-                  "        header: { 'Content-Type': 'application/json' },",
-                  "        body: { mode: 'raw', raw: JSON.stringify({ username: \"admin\", password: \"password123\" }) }",
-                  "    };",
-                  "    pm.sendRequest(authReq, (err, res) => {",
-                  "        if (!err && res.code === 200) {",
-                  "            pm.variables.set(\"token\", res.json().token);",
-                  "        }",
-                  "    });",
-                  "} else {",
-                  "    pm.variables.set(\"token\", \"invalid_token_123\");",
-                  "}",
+                  "eval(pm.variables.get(\"sharedUtils\"));",
+                  "generateAuthToken(isValidToken, baseUrl);",
+                  "generateBookingId(isValidId, baseUrl, \"Original\", \"Name\");",
                   "",
-                  "// 2. Generate Booking ID",
-                  "if (isValidId) {",
-                  "    const bookingReq = {",
-                  "        url: baseUrl + \"/booking\",",
-                  "        method: 'POST',",
-                  "        header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
-                  "        body: {",
-                  "            mode: 'raw',",
-                  "            raw: JSON.stringify({",
-                  "                firstname: \"Original\", lastname: \"Name\", totalprice: 150, depositpaid: false,",
-                  "                bookingdates: { checkin: \"2018-01-01\", checkout: \"2019-01-01\" },",
-                  "                additionalneeds: \"None\"",
-                  "            })",
-                  "        }",
-                  "    };",
-                  "    pm.sendRequest(bookingReq, (err, res) => {",
-                  "        if (!err && res.code === 200) {",
-                  "            pm.variables.set(\"id\", res.json().bookingid);",
-                  "        }",
-                  "    });",
-                  "} else {",
-                  "    pm.variables.set(\"id\", 99999999);",
-                  "}",
+                  "",
                   "",
                   "// 3. Prepare Dynamic Body for PATCH",
                   "let body = {};",
@@ -874,7 +794,7 @@
                   "    body.additionalneeds = pm.iterationData.get(\"additionalneeds\");",
                   "}",
                   "",
-                  "pm.variables.set(\"patchDynamicBody\", JSON.stringify(body));",
+                  "pm.variables.set(\"dynamicBody\", JSON.stringify(body));",
                   ""
                 ]
               }
@@ -901,7 +821,12 @@
                   "        pm.expect(responseJson.lastname).to.eql(\"Name\");",
                   "    });",
                   "}",
-                  ""
+                  "",
+                  "",
+                  "// Cleanup variables",
+                  "pm.variables.unset(\"dynamicBody\");",
+                  "pm.variables.unset(\"token\");",
+                  "pm.variables.unset(\"id\");"
                 ]
               }
             }
@@ -952,46 +877,11 @@
                   "const isValidToken = pm.iterationData.get(\"is_valid_token\") === true || pm.iterationData.get(\"is_valid_token\") === \"true\";",
                   "const baseUrl = pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\";",
                   "",
-                  "// 1. Generate Auth Token",
-                  "if (isValidToken) {",
-                  "    const authReq = {",
-                  "        url: baseUrl + \"/auth\",",
-                  "        method: 'POST',",
-                  "        header: { 'Content-Type': 'application/json' },",
-                  "        body: { mode: 'raw', raw: JSON.stringify({ username: \"admin\", password: \"password123\" }) }",
-                  "    };",
-                  "    pm.sendRequest(authReq, (err, res) => {",
-                  "        if (!err && res.code === 200) {",
-                  "            pm.variables.set(\"token\", res.json().token);",
-                  "        }",
-                  "    });",
-                  "} else {",
-                  "    pm.variables.set(\"token\", \"invalid_token_123\");",
-                  "}",
+                  "eval(pm.variables.get(\"sharedUtils\"));",
+                  "generateAuthToken(isValidToken, baseUrl);",
+                  "generateBookingId(isValidId, baseUrl, \"ToDelete\", \"Soon\");",
                   "",
-                  "// 2. Generate Booking ID",
-                  "if (isValidId) {",
-                  "    const bookingReq = {",
-                  "        url: baseUrl + \"/booking\",",
-                  "        method: 'POST',",
-                  "        header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
-                  "        body: {",
-                  "            mode: 'raw',",
-                  "            raw: JSON.stringify({",
-                  "                firstname: \"ToDelete\", lastname: \"Soon\", totalprice: 150, depositpaid: false,",
-                  "                bookingdates: { checkin: \"2018-01-01\", checkout: \"2019-01-01\" },",
-                  "                additionalneeds: \"None\"",
-                  "            })",
-                  "        }",
-                  "    };",
-                  "    pm.sendRequest(bookingReq, (err, res) => {",
-                  "        if (!err && res.code === 200) {",
-                  "            pm.variables.set(\"id\", res.json().bookingid);",
-                  "        }",
-                  "    });",
-                  "} else {",
-                  "    pm.variables.set(\"id\", 99999999);",
-                  "}",
+                  "",
                   ""
                 ]
               }
@@ -1023,7 +913,11 @@
                   "        });",
                   "    });",
                   "}",
-                  ""
+                  "",
+                  "",
+                  "// Cleanup variables",
+                  "pm.variables.unset(\"token\");",
+                  "pm.variables.unset(\"id\");"
                 ]
               }
             }
@@ -1067,6 +961,201 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Self-Contained Demo",
+      "item": [
+        {
+          "name": "Self-Contained UpdateBooking",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{{dynamicBody}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{id}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const isValidId = pm.iterationData.get(\"is_valid_id\") === true || pm.iterationData.get(\"is_valid_id\") === \"true\";",
+                  "const isValidToken = pm.iterationData.get(\"is_valid_token\") === true || pm.iterationData.get(\"is_valid_token\") === \"true\";",
+                  "const baseUrl = pm.environment.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\";",
+                  "",
+                  "// Use promises to handle sequential asynchronous requests (Auth -> Booking) smoothly",
+                  "function getAuthToken() {",
+                  "    return new Promise((resolve, reject) => {",
+                  "        if (!isValidToken) {",
+                  "            pm.variables.set(\"token\", \"invalid_token_123\");",
+                  "            return resolve();",
+                  "        }",
+                  "        ",
+                  "        const req = {",
+                  "            url: baseUrl + \"/auth\",",
+                  "            method: 'POST',",
+                  "            header: { 'Content-Type': 'application/json' },",
+                  "            body: { mode: 'raw', raw: JSON.stringify({ username: \"admin\", password: \"password123\" }) }",
+                  "        };",
+                  "        ",
+                  "        pm.sendRequest(req, (err, res) => {",
+                  "            if (err) return reject(err);",
+                  "            if (res.code === 200) {",
+                  "                pm.variables.set(\"token\", res.json().token);",
+                  "            }",
+                  "            resolve();",
+                  "        });",
+                  "    });",
+                  "}",
+                  "",
+                  "function getBookingId() {",
+                  "    return new Promise((resolve, reject) => {",
+                  "        if (!isValidId) {",
+                  "            pm.variables.set(\"id\", 99999999);",
+                  "            return resolve();",
+                  "        }",
+                  "        ",
+                  "        const req = {",
+                  "            url: baseUrl + \"/booking\",",
+                  "            method: 'POST',",
+                  "            header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
+                  "            body: {",
+                  "                mode: 'raw',",
+                  "                raw: JSON.stringify({",
+                  "                    firstname: \"Old\", lastname: \"Name\", totalprice: 100, depositpaid: true,",
+                  "                    bookingdates: { checkin: \"2018-01-01\", checkout: \"2019-01-01\" },",
+                  "                    additionalneeds: \"None\"",
+                  "                })",
+                  "            }",
+                  "        };",
+                  "        ",
+                  "        pm.sendRequest(req, (err, res) => {",
+                  "            if (err) return reject(err);",
+                  "            if (res.code === 200) {",
+                  "                pm.variables.set(\"id\", res.json().bookingid);",
+                  "            }",
+                  "            resolve();",
+                  "        });",
+                  "    });",
+                  "}",
+                  "",
+                  "function prepareDynamicBody() {",
+                  "    let body = {};",
+                  "    const fields = [\"firstname\", \"lastname\", \"totalprice\", \"depositpaid\", \"additionalneeds\"];",
+                  "",
+                  "    fields.forEach(field => {",
+                  "        const val = pm.iterationData.get(field);",
+                  "        if (val !== \"OMIT\" && val !== undefined) {",
+                  "            if (field === \"totalprice\") {",
+                  "                body[field] = parseInt(val, 10);",
+                  "            } else if (field === \"depositpaid\") {",
+                  "                body[field] = val === \"true\" || val === true;",
+                  "            } else {",
+                  "                body[field] = val;",
+                  "            }",
+                  "        }",
+                  "    });",
+                  "",
+                  "    const checkin = pm.iterationData.get(\"checkin\");",
+                  "    const checkout = pm.iterationData.get(\"checkout\");",
+                  "",
+                  "    if ((checkin !== \"OMIT\" && checkin !== undefined) || (checkout !== \"OMIT\" && checkout !== undefined)) {",
+                  "        body.bookingdates = {};",
+                  "        if (checkin !== \"OMIT\" && checkin !== undefined) body.bookingdates.checkin = checkin;",
+                  "        if (checkout !== \"OMIT\" && checkout !== undefined) body.bookingdates.checkout = checkout;",
+                  "    }",
+                  "",
+                  "    pm.variables.set(\"dynamicBody\", JSON.stringify(body));",
+                  "}",
+                  "",
+                  "// Execute dependencies and prepare data",
+                  "Promise.all([getAuthToken(), getBookingId()])",
+                  "    .then(() => {",
+                  "        prepareDynamicBody();",
+                  "    })",
+                  "    .catch(err => {",
+                  "        console.error(\"Error setting up self-contained request\", err);",
+                  "    });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "const scenario = pm.iterationData.get(\"scenario\");",
+                  "const expectedStatus = parseInt(pm.iterationData.get(\"expected_status\"), 10);",
+                  "",
+                  "pm.test(`[${scenario}] Status code is ${expectedStatus}`, function () {",
+                  "    pm.response.to.have.status(expectedStatus);",
+                  "});",
+                  "",
+                  "if (expectedStatus === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.test(`[${scenario}] Booking successfully fully updated`, function () {",
+                  "        pm.expect(responseJson.firstname).to.eql(pm.iterationData.get(\"firstname\"));",
+                  "        pm.expect(responseJson.lastname).to.eql(pm.iterationData.get(\"lastname\"));",
+                  "        pm.expect(responseJson.totalprice).to.eql(parseInt(pm.iterationData.get(\"totalprice\"), 10));",
+                  "        pm.expect(responseJson.depositpaid).to.eql(pm.iterationData.get(\"depositpaid\") === \"true\" || pm.iterationData.get(\"depositpaid\") === true);",
+                  "        pm.expect(responseJson.bookingdates.checkin).to.eql(pm.iterationData.get(\"checkin\"));",
+                  "        pm.expect(responseJson.bookingdates.checkout).to.eql(pm.iterationData.get(\"checkout\"));",
+                  "        pm.expect(responseJson.additionalneeds).to.eql(pm.iterationData.get(\"additionalneeds\"));",
+                  "    });",
+                  "}",
+                  "",
+                  "",
+                  "// Cleanup variables",
+                  "pm.variables.unset(\"dynamicBody\");",
+                  "pm.variables.unset(\"token\");",
+                  "pm.variables.unset(\"id\");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "event": [
@@ -1077,7 +1166,54 @@
         "packages": {},
         "requests": {},
         "exec": [
-          ""
+          "const sharedUtils = `",
+          "function generateAuthToken(isValidToken, baseUrl) {",
+          "    if (isValidToken) {",
+          "        const authReq = {",
+          "            url: baseUrl + \"/auth\",",
+          "            method: 'POST',",
+          "            header: { 'Content-Type': 'application/json' },",
+          "            body: { mode: 'raw', raw: JSON.stringify({ username: \"admin\", password: \"password123\" }) }",
+          "        };",
+          "        pm.sendRequest(authReq, (err, res) => {",
+          "            if (!err && res.code === 200) {",
+          "                pm.variables.set(\"token\", res.json().token);",
+          "            }",
+          "        });",
+          "    } else {",
+          "        pm.variables.set(\"token\", \"invalid_token_123\");",
+          "    }",
+          "}",
+          "",
+          "function generateBookingId(isValidId, baseUrl, firstname, lastname, overrides = {}) {",
+          "    if (isValidId) {",
+          "        const bookingReq = {",
+          "            url: baseUrl + \"/booking\",",
+          "            method: 'POST',",
+          "            header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
+          "            body: {",
+          "                mode: 'raw',",
+          "                raw: JSON.stringify({",
+          "                    firstname: firstname || \"Default\",",
+          "                    lastname: lastname || \"Name\",",
+          "                    totalprice: overrides.totalprice !== undefined ? overrides.totalprice : 150,",
+          "                    depositpaid: overrides.depositpaid !== undefined ? overrides.depositpaid : false,",
+          "                    bookingdates: overrides.bookingdates || { checkin: \"2018-01-01\", checkout: \"2019-01-01\" },",
+          "                    additionalneeds: overrides.additionalneeds || \"None\"",
+          "                })",
+          "            }",
+          "        };",
+          "        pm.sendRequest(bookingReq, (err, res) => {",
+          "            if (!err && res.code === 200) {",
+          "                pm.variables.set(\"id\", res.json().bookingid);",
+          "            }",
+          "        });",
+          "    } else {",
+          "        pm.variables.set(\"id\", 99999999);",
+          "    }",
+          "}",
+          "`;",
+          "pm.variables.set(\"sharedUtils\", sharedUtils);"
         ]
       }
     },
