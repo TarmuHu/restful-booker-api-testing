@@ -1170,6 +1170,7 @@
         "exec": [
           "const sharedUtils = `",
           "function generateAuthToken(isValidToken, baseUrl, targetVar = \"token\") {",
+          "    pm.variables.unset(targetVar);",
           "    if (isValidToken) {",
           "        const authReq = {",
           "            url: baseUrl + \"/auth\",",
@@ -1188,6 +1189,7 @@
           "}",
           "",
           "function generateBookingId(isValidId, baseUrl, firstname, lastname, overrides = {}, targetVar = \"id\") {",
+          "    pm.variables.unset(targetVar);",
           "    if (isValidId) {",
           "        const bookingReq = {",
           "            url: baseUrl + \"/booking\",",
