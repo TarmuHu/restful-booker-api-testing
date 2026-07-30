@@ -1,0 +1,196 @@
+--- 01. POST /auth > CreateToken (test) ---
+try {
+    // 1. Extract test data
+    const scenarioName = pm.iterationData.get("scenario");
+    const isSuccess = pm.iterationData.get("is_success") === true || pm.iterationData.get("is_success") === "true";
+
+    // 2. Verify status code
+    pm.test(`[${scenarioName}] Status code is 200`, function() {
+        pm.response.to.have.status(200);
+    });
+    let responseJson;
+
+    // 3. Parse JSON response
+    try {
+        responseJson = pm.response.json();
+    } catch (e) {
+        pm.expect.fail("Invalid JSON");
+        return;
+    }
+
+    // 4. Run scenario assertions
+    if (isSuccess) {
+        pm.test(`[${scenarioName}] Token is successfully retrieved`, function() {
+            pm.expect(responseJson.token).to.be.a("string").and.not.empty;
+            pm.collectionVariables.set("token", responseJson.token);
+        });
+    } else {
+        const expectedMsg = pm.iterationData.get("expected_error_msg");
+        pm.test(`[${scenarioName}] Error message matches expected value: ${expectedMsg}`, function() {
+            pm.expect(responseJson.reason).to.eql(expectedMsg);
+        });
+    }
+} finally {
+    // 5. Cleanup variables
+    pm.variables.unset("dynamicBody");
+}
+
+
+--- 01. POST /auth > CreateToken (prerequest) ---
+// 1. Construct request body
+let body = {};
+const username = pm.iterationData.get("username");
+const password = pm.iterationData.get("password");
+if (username !== "OMIT" && username !== undefined) body.username = username;
+if (password !== "OMIT" && password !== undefined) body.password = password;
+
+// 2. Set dynamic variables
+pm.variables.set("dynamicBody", JSON.stringify(body));
+
+
+--- 02. POST /booking > CreateBooking (test) ---
+try {
+    // 1. Extract test data
+    const scenarioName = pm.iterationData.get("scenario");
+    const isSuccess = pm.iterationData.get("is_success") === true || pm.iterationData.get("is_success") === "true";
+    const expectedStatus = parseInt(pm.iterationData.get("expected_status"), 10);
+
+    // 2. Verify status code
+    pm.test(`[${scenarioName}] Status code should be ${expectedStatus}`, function() {
+        pm.response.to.have.status(expectedStatus);
+    });
+
+    // 3. Guard Clause: Abort if expected negative scenario
+    if (!isSuccess) {
+        console.warn(`[${scenarioName}] Negative test completed. Skipping response validation.`);
+        return;
+    }
+    let responseJson;
+
+    // 4. Parse JSON response
+    try {
+        responseJson = pm.response.json();
+    } catch (e) {
+        pm.expect.fail("Invalid JSON");
+        return;
+    }
+    pm.test(`[${scenarioName}] Booking ID is generated`, function() {
+        pm.expect(responseJson.bookingid).to.be.a("number").and.to.be.at.least(1);
+    });
+    pm.test(`[${scenarioName}] Booking data perfectly matches input (Deep Equality)`, function() {
+        const expectedBooking = JSON.parse(pm.variables.get("dynamicBody"));
+        pm.expect(responseJson.booking).to.eql(expectedBooking);
+    });
+} finally {
+    // 5. Cleanup variables
+    pm.variables.unset("dynamicBody");
+}
+
+
+--- 02. POST /booking > CreateBooking (prerequest) ---
+// 1. Construct request body
+let body = {};
+const fields = ["firstname", "lastname", "totalprice", "depositpaid", "additionalneeds"];
+fields.forEach(field => {
+    const val = pm.iterationData.get(field);
+    if (val !== "OMIT" && val !== undefined) {
+        if (field === "totalprice") {
+            body[field] = parseInt(val, 10);
+        } else if (field === "depositpaid") {
+            body[field] = val === "true" || val === true;
+        } else {
+            body[field] = val;
+        }
+    }
+});
+const checkin = pm.iterationData.get("checkin");
+const checkout = pm.iterationData.get("checkout");
+if ((checkin !== "OMIT" && checkin !== undefined) || (checkout !== "OMIT" && checkout !== undefined)) {
+    body.bookingdates = {};
+    if (checkin !== "OMIT" && checkin !== undefined) body.bookingdates.checkin = checkin;
+    if (checkout !== "OMIT" && checkout !== undefined) body.bookingdates.checkout = checkout;
+}
+
+// 2. Set dynamic variables
+pm.variables.set("dynamicBody", JSON.stringify(body));
+
+
+--- 03. GET /booking > GetBookingIds (prerequest) ---
+// 1. Setup dependencies
+eval(pm.variables.get("sharedUtils"));
+generateBookingId(true, "FixedFirst", "FixedLast", {
+    totalprice: 111,
+    depositpaid: true,
+    bookingdates: {
+        checkin: "2030-02-01",
+        checkout: "2030-03-01"
+    },
+    additionalneeds: "Breakfast"
+}, "dynamic_created_id");
+// Use query params logic using pm.request.url.query API
+
+// 2. Construct query parameters
+if (pm.iterationData.get("filter_firstname") !== "OMIT") pm.request.url.query.add({
+    key: "firstname",
+    value: pm.iterationData.get("filter_firstname")
+});
+
+// 3. Construct query parameters
+if (pm.iterationData.get("filter_lastname") !== "OMIT") pm.request.url.query.add({
+    key: "lastname",
+    value: pm.iterationData.get("filter_lastname")
+});
+
+// 4. Construct query parameters
+if (pm.iterationData.get("filter_checkin") !== "OMIT") pm.request.url.query.add({
+    key: "checkin",
+    value: pm.iterationData.get("filter_checkin")
+});
+
+// 5. Construct query parameters
+if (pm.iterationData.get("filter_checkout") !== "OMIT") pm.request.url.query.add({
+    key: "checkout",
+    value: pm.iterationData.get("filter_checkout")
+});
+
+
+--- 03. GET /booking > GetBookingIds (test) ---
+try {
+    // 1. Extract test data
+    const scenario = pm.iterationData.get("scenario");
+    const shouldFindMatch = pm.iterationData.get("should_find_match") === true || pm.iterationData.get("should_find_match") === "true";
+    const createdId = pm.variables.get("dynamic_created_id");
+
+    // 2. Verify status code
+    pm.test(`[${scenario}] Status code is 200`, function() {
+        pm.response.to.have.status(200);
+    });
+    let responseJson;
+
+    // 3. Parse JSON response
+    try {
+        responseJson = pm.response.json();
+    } catch (e) {
+        pm.expect.fail("Invalid JSON");
+        return;
+    }
+    pm.test(`[${scenario}] Response is an array`, function() {
+        pm.expect(responseJson).to.be.an("array");
+    });
+
+    // 4. Run scenario assertions
+    if (shouldFindMatch) {
+        pm.test(`[${scenario}] Match found in results (contains created ID: ${createdId})`, function() {
+            const found = responseJson.find(b => b.bookingid === createdId);
+            pm.expect(found).to.not.be.undefined;
+        });
+    } else {
+        pm.test(`[${scenario}] No matches found for invalid filters`, function() {
+            const found = responseJson.find(b => b.bookingid === createdId);
+            pm.expect(found).to.be.undefined;
+        });
+    }
+} finally {
+    // 5. Cleanup variables
+    pm.variables.unset("dynamic_created_id");
+}

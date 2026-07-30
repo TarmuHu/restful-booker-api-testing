@@ -1,22 +1,21 @@
 #!/bin/bash
 
-# Define collection and data files
+# 1. Define collection file
 COLLECTION="restful-booker.postman_collection.json"
 
 FAILED=0
 
-# Create reports directory if it doesn't exist
+# 2. Create reports directory
 mkdir -p reports
 
-# Function to run newman for a specific folder and data file
+# 3. Run newman for a specific folder
 run_newman() {
     folder="$1"
     data_file="$2"
-    # Create a safe name for the report files by replacing spaces and slashes with dashes
+
+    # 3.1 Generate safe file name for reports
     safe_name=$(echo "$folder" | tr ' /:' '-')
-    echo "=========================================================="
-    echo "Running tests for: $folder"
-    echo "=========================================================="
+    echo "=== Running tests for: $folder ==="
 
     if [ -n "$data_file" ]; then
         npx newman run "$COLLECTION" --folder "$folder" -d "$data_file" \
@@ -32,7 +31,7 @@ run_newman() {
     echo ""
 }
 
-# Run all test folders independently with their respective CSV data
+# 4. Run all tests independently
 run_newman "01. POST /auth" "01-post-auth.csv"
 run_newman "02. POST /booking" "02-post-booking.csv"
 run_newman "03. GET /booking" "03-get-booking.csv"
@@ -42,10 +41,11 @@ run_newman "06. PATCH /booking/:id" "06-patch-booking.csv"
 run_newman "07. DELETE /booking/:id" "07-delete-booking.csv"
 run_newman "08. GET /ping" ""
 
+# 5. Check test results
 if [ $FAILED -ne 0 ]; then
-    echo "Some tests failed!"
+    echo "Error: Some tests failed."
     exit 1
 else
-    echo "All tests passed successfully!"
+    echo "Success: All tests passed."
     exit 0
 fi
