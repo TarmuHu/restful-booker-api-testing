@@ -168,7 +168,7 @@
                             "script": {
                                 "type": "text/javascript",
                                 "exec": [
-                                    "// Construct dynamic body (Parse types and skip \"OMIT\" fields)",
+                                    "// Construct dynamic body",
                                     "eval(pm.variables.get(\"sharedUtils\"));",
                                     "const body = buildBookingPayload();",
                                     "pm.variables.set(\"dynamicBody\", JSON.stringify(body));"
@@ -616,7 +616,6 @@
                                     "generateBookingId(isValidId, originalData.firstname, originalData.lastname, originalData);",
                                     "",
                                     "// 2. Construct dynamic body and expected data",
-                                    "eval(pm.variables.get(\"sharedUtils\"));",
                                     "const body = buildBookingPayload();",
                                     "let expectedData = JSON.parse(JSON.stringify(originalData));",
                                     "",
