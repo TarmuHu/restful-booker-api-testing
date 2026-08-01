@@ -439,11 +439,6 @@
                                 "type": "text"
                             },
                             {
-                                "key": "Cookie",
-                                "value": "token={{token}}",
-                                "type": "text"
-                            },
-                            {
                                 "key": "Authorization",
                                 "value": "",
                                 "type": "text",
@@ -491,7 +486,13 @@
                                     "// 2. Construct dynamic body",
                                     "eval(pm.variables.get(\"sharedUtils\"));",
                                     "const body = buildBookingPayload();",
-                                    "pm.variables.set(\"dynamicBody\", JSON.stringify(body));"
+                                    "pm.variables.set(\"dynamicBody\", JSON.stringify(body));",
+                                    "",
+                                    "// Inject Cookie header based on OMIT flag. Using {{token}} allows async fetch to finish.",
+                                    "const tokenStatus = pm.iterationData.get('is_valid_token');",
+                                    "if (tokenStatus !== 'OMIT' && tokenStatus !== undefined) {",
+                                    "    pm.request.headers.add({ key: 'Cookie', value: 'token={{token}}' });",
+                                    "}"
                                 ]
                             }
                         },
@@ -553,11 +554,6 @@
                             {
                                 "key": "Accept",
                                 "value": "application/json",
-                                "type": "text"
-                            },
-                            {
-                                "key": "Cookie",
-                                "value": "token={{token}}",
                                 "type": "text"
                             },
                             {
@@ -631,7 +627,13 @@
                                     "});",
                                     "",
                                     "pm.variables.set(\"dynamicBody\", JSON.stringify(body));",
-                                    "pm.variables.set(\"expectedBookingData\", JSON.stringify(expectedData));"
+                                    "pm.variables.set(\"expectedBookingData\", JSON.stringify(expectedData));",
+                                    "",
+                                    "// Inject Cookie header based on OMIT flag. Using {{token}} allows async fetch to finish.",
+                                    "const tokenStatus = pm.iterationData.get('is_valid_token');",
+                                    "if (tokenStatus !== 'OMIT' && tokenStatus !== undefined) {",
+                                    "    pm.request.headers.add({ key: 'Cookie', value: 'token={{token}}' });",
+                                    "}"
                                 ]
                             }
                         },
@@ -687,11 +689,6 @@
                         "method": "DELETE",
                         "header": [
                             {
-                                "key": "Cookie",
-                                "value": "token={{token}}",
-                                "type": "text"
-                            },
-                            {
                                 "key": "Authorization",
                                 "value": "",
                                 "type": "text",
@@ -722,7 +719,13 @@
                                     "",
                                     "eval(pm.variables.get(\"sharedUtils\"));",
                                     "generateAuthToken(isValidToken);",
-                                    "generateBookingId(isValidId, \"ToDelete\", \"Soon\");"
+                                    "generateBookingId(isValidId, \"ToDelete\", \"Soon\");",
+                                    "",
+                                    "// Inject Cookie header based on OMIT flag. Using {{token}} allows async fetch to finish.",
+                                    "const tokenStatus = pm.iterationData.get('is_valid_token');",
+                                    "if (tokenStatus !== 'OMIT' && tokenStatus !== undefined) {",
+                                    "    pm.request.headers.add({ key: 'Cookie', value: 'token={{token}}' });",
+                                    "}"
                                 ]
                             }
                         },
@@ -823,11 +826,6 @@
                                 "type": "text"
                             },
                             {
-                                "key": "Cookie",
-                                "value": "token={{token}}",
-                                "type": "text"
-                            },
-                            {
                                 "key": "Authorization",
                                 "value": "",
                                 "type": "text",
@@ -902,7 +900,8 @@
                                     "function getBookingId() {",
                                     "    return new Promise((resolve, reject) => {",
                                     "        if (!isValidId) {",
-                                    "            pm.variables.set(\"id\", 99999999);",
+                                    "            if (isValidId === \"invalid_string\") pm.variables.set(\"id\", \"invalid_string\");",
+                                    "            else pm.variables.set(\"id\", 99999999);",
                                     "            return resolve();",
                                     "        }",
                                     "",
@@ -975,7 +974,13 @@
                                     "    })",
                                     "    .catch(err => {",
                                     "        console.error(\"Error setting up self-contained request\", err);",
-                                    "    });"
+                                    "    });",
+                                    "",
+                                    "// Inject Cookie header based on OMIT flag. Using {{token}} allows async fetch to finish.",
+                                    "const tokenStatus = pm.iterationData.get('is_valid_token');",
+                                    "if (tokenStatus !== 'OMIT' && tokenStatus !== undefined) {",
+                                    "    pm.request.headers.add({ key: 'Cookie', value: 'token={{token}}' });",
+                                    "}"
                                 ]
                             }
                         },
@@ -1064,7 +1069,7 @@
                     "function generateAuthToken(isValidToken, targetVar = \"token\") {",
                     "    pm.variables.unset(targetVar);",
                     "    const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\";",
-                    "    if (isValidToken) {",
+                    "    if (isValidToken === \"OMIT\") {\n        // Do nothing, token is already unset\n    } else if (isValidToken === true || isValidToken === \"true\") {",
                     "        const authReq = {",
                     "            url: baseUrl + \"/auth\",",
                     "            method: 'POST',",
@@ -1107,7 +1112,8 @@
                     "            }",
                     "        });",
                     "    } else {",
-                    "        pm.variables.set(targetVar, 99999999);",
+                    "        if (isValidId === \"invalid_string\") pm.variables.set(targetVar, \"invalid_string\");",
+                    "        else pm.variables.set(targetVar, 99999999);",
                     "    }",
                     "}",
                     "`;",

@@ -1,5 +1,10 @@
 scenario,firstname,lastname,totalprice,depositpaid,checkin,checkout,additionalneeds,is_valid_id,is_valid_token,expected_status
 Happy Path - Full Update,Jane,Doe,500,false,2035-01-01,2035-01-05,Vegan Meals,true,true,200
 Negative - Invalid Token,Jane,Doe,500,false,2035-01-01,2035-01-05,Vegan Meals,true,false,403
+Negative - Missing Token,Jane,Doe,500,false,2035-01-01,2035-01-05,Vegan Meals,true,OMIT,403
 Negative - Missing Firstname,OMIT,Doe,500,false,2035-01-01,2035-01-05,Vegan Meals,true,true,400
+Negative - Missing Lastname,Jane,OMIT,500,false,2035-01-01,2035-01-05,Vegan Meals,true,true,400
+Negative - Missing Totalprice,Jane,Doe,OMIT,false,2035-01-01,2035-01-05,Vegan Meals,true,true,400
 Negative - Invalid ID,Jane,Doe,500,false,2035-01-01,2035-01-05,Vegan Meals,false,true,405
+Negative - String ID,Jane,Doe,500,false,2035-01-01,2035-01-05,Vegan Meals,invalid_string,true,405
+Negative - String Totalprice,Jane,Doe,FiveHundred,false,2035-01-01,2035-01-05,Vegan Meals,true,true,400

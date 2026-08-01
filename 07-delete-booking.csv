@@ -1,4 +1,6 @@
 scenario,is_valid_id,is_valid_token,expected_status
 Happy Path - Delete Booking,true,true,201
 Negative - Invalid Token,true,false,403
+Negative - Missing Token,true,OMIT,403
 Negative - Invalid ID,false,true,405
+Negative - String ID,invalid_string,true,405
