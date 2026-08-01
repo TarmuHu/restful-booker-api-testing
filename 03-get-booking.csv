@@ -1,9 +1,9 @@
 scenario,filter_firstname,filter_lastname,filter_checkin,filter_checkout,should_find_match,expected_status
-Happy Path - Filter by Date,OMIT,OMIT,2030-01-01,2030-12-31,true,200
 Happy Path - Filter by Name,FixedFirst,FixedLast,OMIT,OMIT,true,200
 Happy Path - Filter by Name and Date,FixedFirst,FixedLast,2030-01-01,2030-12-31,true,200
+Happy Path - Filter by Date,OMIT,OMIT,2030-01-01,2030-12-31,true,200
+Negative - SQLi in Firstname,'; DROP TABLE bookings;--,OMIT,OMIT,OMIT,false,200
+Negative - XSS in Lastname,OMIT,<script>alert(1)</script>,OMIT,OMIT,false,200
 Negative - No Matches,NonExistentFirst,NonExistentLast,OMIT,OMIT,false,200
 Negative - Invalid Checkin Format,OMIT,OMIT,01-01-2030,OMIT,true,200
 Negative - Invalid Checkout Format,OMIT,OMIT,OMIT,31-12-2030,false,500
-Negative - SQLi in Firstname,'; DROP TABLE bookings;--,OMIT,OMIT,OMIT,false,200
-Negative - XSS in Lastname,OMIT,<script>alert(1)</script>,OMIT,OMIT,false,200

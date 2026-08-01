@@ -983,7 +983,7 @@
                                     "",
                                     "// Inject Cookie header based on OMIT flag. Using {{token}} allows async fetch to finish.",
                                     "const tokenStatus = pm.iterationData.get('is_valid_token');",
-                                    "if (tokenStatus !== 'OMIT' && tokenStatus !== undefined) {",
+                                    "if (tokenStatus !== 'OMIT') {",
                                     "    pm.request.headers.add({ key: 'Cookie', value: 'token={{token}}' });",
                                     "}"
                                 ]
