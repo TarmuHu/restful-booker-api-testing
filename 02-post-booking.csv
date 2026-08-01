@@ -1,6 +1,7 @@
 scenario,firstname,lastname,totalprice,depositpaid,checkin,checkout,additionalneeds,is_success,expected_status
-Happy Path - Valid Booking,Tony,Stark,899,true,2026-08-01,2026-08-10,Iron Suit Storage,true,200
 Happy Path - Special Characters,Xi-A'on,O'Connor,500,true,2026-08-01,2026-08-10,OMIT,true,200
+Happy Path - Valid Booking,Tony,Stark,899,true,2026-08-01,2026-08-10,Iron Suit Storage,true,200
+Happy Path - Zero Totalprice,Tony,Stark,0,true,2026-08-01,2026-08-10,OMIT,true,200
 Negative - Missing Firstname,OMIT,Stark,899,true,2026-08-01,2026-08-10,Iron Suit Storage,false,500
 Negative - Empty Firstname,,Stark,899,true,2026-08-01,2026-08-10,Iron Suit Storage,true,200
 Negative - Missing Lastname,Tony,OMIT,899,true,2026-08-01,2026-08-10,OMIT,false,500
@@ -8,10 +9,9 @@ Negative - Empty Lastname,Tony,,899,true,2026-08-01,2026-08-10,OMIT,true,200
 Negative - Missing Totalprice,Tony,Stark,OMIT,true,2026-08-01,2026-08-10,OMIT,false,500
 Negative - String Totalprice,Tony,Stark,OneHundred,true,2026-08-01,2026-08-10,OMIT,false,500
 Negative - Negative Totalprice,Tony,Stark,-100,true,2026-08-01,2026-08-10,OMIT,true,200
-Happy Path - Zero Totalprice,Tony,Stark,0,true,2026-08-01,2026-08-10,OMIT,true,200
 Negative - Missing Depositpaid,Tony,Stark,100,OMIT,2026-08-01,2026-08-10,OMIT,false,500
 Negative - String Depositpaid,Tony,Stark,100,Yes,2026-08-01,2026-08-10,OMIT,true,200
-Negative - Invalid Checkin Format,Tony,Stark,100,true,invalid_date,2026-08-10,OMIT,false,200
 Negative - Missing Checkin,Tony,Stark,100,true,OMIT,2026-08-10,OMIT,false,500
+Negative - Invalid Checkin Format,Tony,Stark,100,true,invalid_date,2026-08-10,OMIT,false,200
 Negative - Missing Checkout,Tony,Stark,100,true,2026-08-01,OMIT,OMIT,false,500
 Negative - Checkin After Checkout,Tony,Stark,100,true,2026-08-15,2026-08-10,OMIT,true,200

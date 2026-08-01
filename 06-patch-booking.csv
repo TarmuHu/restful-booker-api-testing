@@ -2,7 +2,7 @@ scenario,firstname,lastname,totalprice,depositpaid,checkin,checkout,additionalne
 Happy Path - Partial Update Additional Needs,OMIT,OMIT,OMIT,OMIT,OMIT,OMIT,Double Bed,true,true,200
 Happy Path - Partial Update Firstname,Jimmy,OMIT,OMIT,OMIT,OMIT,OMIT,OMIT,true,true,200
 Happy Path - Partial Update Totalprice,OMIT,OMIT,999,OMIT,OMIT,OMIT,OMIT,true,true,200
-Negative - Invalid Token,OMIT,OMIT,OMIT,OMIT,OMIT,OMIT,Double Bed,true,false,403
 Negative - Missing Token,OMIT,OMIT,OMIT,OMIT,OMIT,OMIT,Double Bed,true,OMIT,403
+Negative - Invalid Token,OMIT,OMIT,OMIT,OMIT,OMIT,OMIT,Double Bed,true,false,403
 Negative - Invalid ID,OMIT,OMIT,OMIT,OMIT,OMIT,OMIT,Double Bed,false,true,405
 Negative - String ID,OMIT,OMIT,OMIT,OMIT,OMIT,OMIT,Double Bed,invalid_string,true,405
