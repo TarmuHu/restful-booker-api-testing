@@ -38,7 +38,6 @@
                                     "    if (isSuccess) {",
                                     "        pm.test(`[${scenarioName}] Token is successfully retrieved`, function() {",
                                     "            pm.expect(responseJson.token).to.be.a(\"string\").and.not.empty;",
-                                    "            pm.collectionVariables.set(\"token\", responseJson.token);",
                                     "        });",
                                     "    } else {",
                                     "        const expectedMsg = pm.iterationData.get(\"expected_error_msg\");",
@@ -146,7 +145,6 @@
                                     "    // 2. Validate booking ID and booking data perfectly matches input",
                                     "    pm.test(`[${scenarioName}] Booking ID is generated`, function() {",
                                     "        pm.expect(responseJson.bookingid).to.be.a(\"number\").and.to.be.at.least(1);",
-                                    "        pm.collectionVariables.set(\"id\", responseJson.bookingid);",
                                     "    });",
                                     "",
                                     "    pm.test(`[${scenarioName}] Booking data perfectly matches input (Deep Equality)`, function() {",
@@ -1141,14 +1139,6 @@
         {
             "key": "baseUrl",
             "value": "https://restful-booker.herokuapp.com"
-        },
-        {
-            "key": "token",
-            "value": ""
-        },
-        {
-            "key": "id",
-            "value": ""
         },
         {
             "key": "username",
