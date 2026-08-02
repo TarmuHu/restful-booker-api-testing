@@ -38,7 +38,6 @@
                                     "    if (isSuccess) {",
                                     "        pm.test(`[${scenarioName}] Token is successfully retrieved`, function() {",
                                     "            pm.expect(responseJson.token).to.be.a(\"string\").and.not.empty;",
-                                    "            pm.collectionVariables.set(\"token\", responseJson.token);",
                                     "        });",
                                     "    } else {",
                                     "        const expectedMsg = pm.iterationData.get(\"expected_error_msg\");",
@@ -146,7 +145,6 @@
                                     "    // 2. Validate booking ID and booking data perfectly matches input",
                                     "    pm.test(`[${scenarioName}] Booking ID is generated`, function() {",
                                     "        pm.expect(responseJson.bookingid).to.be.a(\"number\").and.to.be.at.least(1);",
-                                    "        pm.collectionVariables.set(\"id\", responseJson.bookingid);",
                                     "    });",
                                     "",
                                     "    pm.test(`[${scenarioName}] Booking data perfectly matches input (Deep Equality)`, function() {",
@@ -242,7 +240,7 @@
                                     "// 1. Setup dependencies and generate baseline booking",
                                     "eval(pm.variables.get(\"sharedUtils\"));",
                                     "",
-                                    "generateBookingId(true, \"FixedFirst\", \"FixedLast\", {",
+                                    "generateBookingId(\"FixedFirst\", \"FixedLast\", {",
                                     "    totalprice: 111,",
                                     "    depositpaid: true,",
                                     "    bookingdates: {",
@@ -286,9 +284,14 @@
                                     "    const shouldFindMatch = pm.iterationData.get(\"should_find_match\") === true || pm.iterationData.get(\"should_find_match\") === \"true\";",
                                     "    const createdId = pm.variables.get(\"id\");",
                                     "",
-                                    "    pm.test(`[${scenario}] Status code is 200`, function() {",
-                                    "        pm.response.to.have.status(200);",
+                                    "    const expectedStatus = parseInt(pm.iterationData.get(\"expected_status\")) || 200;",
+                                    "    pm.test(`[${scenario}] Status code should be ${expectedStatus}`, function() {",
+                                    "        pm.response.to.have.status(expectedStatus);",
                                     "    });",
+                                    "    if (expectedStatus !== 200) {",
+                                    "        console.log(`[${scenario}] Negative test completed. Skipping response validation.`);",
+                                    "        return;",
+                                    "    }",
                                     "",
                                     "    let responseJson;",
                                     "    try {",
@@ -358,7 +361,6 @@
                                 "type": "text/javascript",
                                 "exec": [
                                     "// Setup test environment and baseline booking data",
-                                    "const isValidId = pm.iterationData.get(\"is_valid_id\") === true || pm.iterationData.get(\"is_valid_id\") === \"true\";",
                                     "",
                                     "eval(pm.variables.get(\"sharedUtils\"));",
                                     "",
@@ -374,7 +376,7 @@
                                     "    additionalneeds: \"None\"",
                                     "};",
                                     "",
-                                    "generateBookingId(isValidId, bookingData.firstname, bookingData.lastname, bookingData);",
+                                    "generateBookingId(bookingData.firstname, bookingData.lastname, bookingData);",
                                     "pm.variables.set(\"expectedBookingData\", JSON.stringify(bookingData));"
                                 ]
                             }
@@ -439,11 +441,6 @@
                                 "type": "text"
                             },
                             {
-                                "key": "Cookie",
-                                "value": "token={{token}}",
-                                "type": "text"
-                            },
-                            {
                                 "key": "Authorization",
                                 "value": "",
                                 "type": "text",
@@ -478,12 +475,10 @@
                                 "type": "text/javascript",
                                 "exec": [
                                     "// 1. Setup test environment and baseline booking",
-                                    "const isValidId = pm.iterationData.get(\"is_valid_id\") === true || pm.iterationData.get(\"is_valid_id\") === \"true\";",
-                                    "const isValidToken = pm.iterationData.get(\"is_valid_token\") === true || pm.iterationData.get(\"is_valid_token\") === \"true\";",
                                     "",
                                     "eval(pm.variables.get(\"sharedUtils\"));",
-                                    "generateAuthToken(isValidToken);",
-                                    "generateBookingId(isValidId, \"Old\", \"Name\", {",
+                                    "generateAuthToken();",
+                                    "generateBookingId(\"Old\", \"Name\", {",
                                     "    totalprice: 100,",
                                     "    depositpaid: true",
                                     "});",
@@ -491,7 +486,13 @@
                                     "// 2. Construct dynamic body",
                                     "eval(pm.variables.get(\"sharedUtils\"));",
                                     "const body = buildBookingPayload();",
-                                    "pm.variables.set(\"dynamicBody\", JSON.stringify(body));"
+                                    "pm.variables.set(\"dynamicBody\", JSON.stringify(body));",
+                                    "",
+                                    "// Inject Cookie header based on OMIT flag. Using {{token}} allows async fetch to finish.",
+                                    "const tokenStatus = pm.iterationData.get('is_valid_token');",
+                                    "if (tokenStatus !== 'OMIT' && tokenStatus !== undefined) {",
+                                    "    pm.request.headers.add({ key: 'Cookie', value: 'token={{token}}' });",
+                                    "}"
                                 ]
                             }
                         },
@@ -556,11 +557,6 @@
                                 "type": "text"
                             },
                             {
-                                "key": "Cookie",
-                                "value": "token={{token}}",
-                                "type": "text"
-                            },
-                            {
                                 "key": "Authorization",
                                 "value": "",
                                 "type": "text",
@@ -595,11 +591,9 @@
                                 "type": "text/javascript",
                                 "exec": [
                                     "// 1. Setup test environment and baseline booking",
-                                    "const isValidId = pm.iterationData.get(\"is_valid_id\") === true || pm.iterationData.get(\"is_valid_id\") === \"true\";",
-                                    "const isValidToken = pm.iterationData.get(\"is_valid_token\") === true || pm.iterationData.get(\"is_valid_token\") === \"true\";",
                                     "",
                                     "eval(pm.variables.get(\"sharedUtils\"));",
-                                    "generateAuthToken(isValidToken);",
+                                    "generateAuthToken();",
                                     "",
                                     "const originalData = {",
                                     "    firstname: \"Original\",",
@@ -613,7 +607,7 @@
                                     "    additionalneeds: \"None\"",
                                     "};",
                                     "",
-                                    "generateBookingId(isValidId, originalData.firstname, originalData.lastname, originalData);",
+                                    "generateBookingId(originalData.firstname, originalData.lastname, originalData);",
                                     "",
                                     "// 2. Construct dynamic body and expected data",
                                     "const body = buildBookingPayload();",
@@ -631,7 +625,13 @@
                                     "});",
                                     "",
                                     "pm.variables.set(\"dynamicBody\", JSON.stringify(body));",
-                                    "pm.variables.set(\"expectedBookingData\", JSON.stringify(expectedData));"
+                                    "pm.variables.set(\"expectedBookingData\", JSON.stringify(expectedData));",
+                                    "",
+                                    "// Inject Cookie header based on OMIT flag. Using {{token}} allows async fetch to finish.",
+                                    "const tokenStatus = pm.iterationData.get('is_valid_token');",
+                                    "if (tokenStatus !== 'OMIT' && tokenStatus !== undefined) {",
+                                    "    pm.request.headers.add({ key: 'Cookie', value: 'token={{token}}' });",
+                                    "}"
                                 ]
                             }
                         },
@@ -687,11 +687,6 @@
                         "method": "DELETE",
                         "header": [
                             {
-                                "key": "Cookie",
-                                "value": "token={{token}}",
-                                "type": "text"
-                            },
-                            {
                                 "key": "Authorization",
                                 "value": "",
                                 "type": "text",
@@ -717,12 +712,16 @@
                                 "type": "text/javascript",
                                 "exec": [
                                     "// Setup test dependencies and baseline booking",
-                                    "const isValidId = pm.iterationData.get(\"is_valid_id\") === true || pm.iterationData.get(\"is_valid_id\") === \"true\";",
-                                    "const isValidToken = pm.iterationData.get(\"is_valid_token\") === true || pm.iterationData.get(\"is_valid_token\") === \"true\";",
                                     "",
                                     "eval(pm.variables.get(\"sharedUtils\"));",
-                                    "generateAuthToken(isValidToken);",
-                                    "generateBookingId(isValidId, \"ToDelete\", \"Soon\");"
+                                    "generateAuthToken();",
+                                    "generateBookingId(\"ToDelete\", \"Soon\");",
+                                    "",
+                                    "// Inject Cookie header based on OMIT flag. Using {{token}} allows async fetch to finish.",
+                                    "const tokenStatus = pm.iterationData.get('is_valid_token');",
+                                    "if (tokenStatus !== 'OMIT' && tokenStatus !== undefined) {",
+                                    "    pm.request.headers.add({ key: 'Cookie', value: 'token={{token}}' });",
+                                    "}"
                                 ]
                             }
                         },
@@ -823,11 +822,6 @@
                                 "type": "text"
                             },
                             {
-                                "key": "Cookie",
-                                "value": "token={{token}}",
-                                "type": "text"
-                            },
-                            {
                                 "key": "Authorization",
                                 "value": "",
                                 "type": "text",
@@ -862,14 +856,14 @@
                                 "type": "text/javascript",
                                 "exec": [
                                     "// 1. Setup variables and define helper functions",
-                                    "const isValidId = pm.iterationData.get(\"is_valid_id\") === true || pm.iterationData.get(\"is_valid_id\") === \"true\";",
-                                    "const isValidToken = pm.iterationData.get(\"is_valid_token\") === true || pm.iterationData.get(\"is_valid_token\") === \"true\";",
                                     "const baseUrl = \"https://restful-booker.herokuapp.com\";",
                                     "pm.variables.set(\"baseUrl\", baseUrl);",
                                     "",
                                     "function getAuthToken() {",
                                     "    return new Promise((resolve, reject) => {",
-                                    "        if (!isValidToken) {",
+                                    "        const isValidToken = pm.iterationData.get(\"is_valid_token\");",
+                                    "        if (isValidToken === \"OMIT\") { return resolve(); }",
+                                    "        if (isValidToken !== \"true\") {",
                                     "            pm.variables.set(\"token\", \"invalid_token_123\");",
                                     "            return resolve();",
                                     "        }",
@@ -901,8 +895,10 @@
                                     "",
                                     "function getBookingId() {",
                                     "    return new Promise((resolve, reject) => {",
-                                    "        if (!isValidId) {",
-                                    "            pm.variables.set(\"id\", 99999999);",
+                                    "        const isValidId = pm.iterationData.get(\"is_valid_id\");",
+                                    "        if (isValidId !== \"true\") {",
+                                    "            if (isValidId === \"false\") pm.variables.set(\"id\", 99999999);",
+                                    "            else pm.variables.set(\"id\", isValidId);",
                                     "            return resolve();",
                                     "        }",
                                     "",
@@ -975,7 +971,13 @@
                                     "    })",
                                     "    .catch(err => {",
                                     "        console.error(\"Error setting up self-contained request\", err);",
-                                    "    });"
+                                    "    });",
+                                    "",
+                                    "// Inject Cookie header based on OMIT flag. Using {{token}} allows async fetch to finish.",
+                                    "const tokenStatus = pm.iterationData.get('is_valid_token');",
+                                    "if (tokenStatus !== 'OMIT') {",
+                                    "    pm.request.headers.add({ key: 'Cookie', value: 'token={{token}}' });",
+                                    "}"
                                 ]
                             }
                         },
@@ -1061,10 +1063,13 @@
                     "    return body;",
                     "}",
                     "",
-                    "function generateAuthToken(isValidToken, targetVar = \"token\") {",
+                    "function generateAuthToken(targetVar = \"token\") {",
                     "    pm.variables.unset(targetVar);",
-                    "    const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\";",
-                    "    if (isValidToken) {",
+                    "    const isValidToken = pm.iterationData.get(\"is_valid_token\") !== undefined ? pm.iterationData.get(\"is_valid_token\") : \"true\";",
+                    "    if (isValidToken === \"OMIT\") {",
+                    "        // Do nothing, token is already unset",
+                    "    } else if (isValidToken === \"true\") {",
+                    "        const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\";",
                     "        const authReq = {",
                     "            url: baseUrl + \"/auth\",",
                     "            method: 'POST',",
@@ -1081,10 +1086,11 @@
                     "    }",
                     "}",
                     "",
-                    "function generateBookingId(isValidId, firstname, lastname, overrides = {}, targetVar = \"id\") {",
+                    "function generateBookingId(firstname, lastname, overrides = {}, targetVar = \"id\") {",
                     "    pm.variables.unset(targetVar);",
+                    "    const isValidId = pm.iterationData.get(\"is_valid_id\") !== undefined ? pm.iterationData.get(\"is_valid_id\") : \"true\";",
+                    "    if (isValidId === \"true\") {",
                     "    const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"https://restful-booker.herokuapp.com\";",
-                    "    if (isValidId) {",
                     "        const bookingReq = {",
                     "            url: baseUrl + \"/booking\",",
                     "            method: 'POST',",
@@ -1106,8 +1112,10 @@
                     "                pm.variables.set(targetVar, res.json().bookingid);",
                     "            }",
                     "        });",
-                    "    } else {",
+                    "    } else if (isValidId === \"false\") {",
                     "        pm.variables.set(targetVar, 99999999);",
+                    "    } else {",
+                    "        pm.variables.set(targetVar, isValidId);",
                     "    }",
                     "}",
                     "`;",
@@ -1131,14 +1139,6 @@
         {
             "key": "baseUrl",
             "value": "https://restful-booker.herokuapp.com"
-        },
-        {
-            "key": "token",
-            "value": ""
-        },
-        {
-            "key": "id",
-            "value": ""
         },
         {
             "key": "username",
