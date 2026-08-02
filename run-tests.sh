@@ -40,6 +40,7 @@ run_newman "05. PUT /booking/:id" "05-put-booking.csv"
 run_newman "06. PATCH /booking/:id" "06-patch-booking.csv"
 run_newman "07. DELETE /booking/:id" "07-delete-booking.csv"
 run_newman "08. GET /ping" ""
+run_newman "Self-Contained Demo" "05-put-booking.csv"
 
 # 5. Check test results
 if [ $FAILED -ne 0 ]; then
