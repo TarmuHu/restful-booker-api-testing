@@ -10,7 +10,7 @@ Happy Path - Valid Booking,Tony,Stark,899,true,2026-08-01,2026-08-10,Iron Suit S
 [Totalprice] Negative - String Totalprice,Tony,Stark,OneHundred,true,2026-08-01,2026-08-10,OMIT,false,500
 [Totalprice] Negative - Negative Totalprice,Tony,Stark,-100,true,2026-08-01,2026-08-10,OMIT,true,200
 [Depositpaid] Negative - Missing Depositpaid,Tony,Stark,100,OMIT,2026-08-01,2026-08-10,OMIT,false,500
-[Depositpaid] Negative - String Depositpaid,Tony,Stark,100,Yes,2026-08-01,2026-08-10,OMIT,true,200
+[Depositpaid] Negative - String Depositpaid,Tony,Stark,100,Yes,2026-08-01,2026-08-10,OMIT,false,200
 [Checkin] Negative - Missing Checkin,Tony,Stark,100,true,OMIT,2026-08-10,OMIT,false,500
 [Checkin] Negative - Invalid Checkin Format,Tony,Stark,100,true,invalid_date,2026-08-10,OMIT,false,200
 [Checkout] Negative - Missing Checkout,Tony,Stark,100,true,2026-08-01,OMIT,OMIT,false,500
