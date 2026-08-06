@@ -1,5 +1,7 @@
 # Restful-Booker API Testing Portfolio
 
+[![Tests](https://github.com/TarmuHu/restful-booker-tests/actions/workflows/test.yml/badge.svg)](https://github.com/TarmuHu/restful-booker-tests/actions/workflows/test.yml)
+
 Welcome! This repository serves as a showcase of my API testing capabilities. It is designed to demonstrate comprehensive automated testing methodologies, continuous integration, and clean, independent script execution using Postman and Newman.
 
 Whether you're a recruiter looking for a summary of my skills, or an engineering manager diving into my technical approach, you'll find everything you need below.
