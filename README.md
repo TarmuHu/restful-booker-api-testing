@@ -59,9 +59,7 @@ After execution, test reports are automatically generated in the `reports/` dire
 
 - Open the `.html` files in any web browser to view the detailed `htmlextra` visual report.
 
-## 📬 About Me & Contact
-
-I am a passionate QA professional focused on building robust, scalable automated test suites.
+## 📬 Contact
 
 - **Name:** Tarmu Hu
 - **LinkedIn:** [linkedin.com/in/tarmu-hu-2b7948200](https://www.linkedin.com/in/tarmu-hu-2b7948200)
